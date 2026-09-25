@@ -1,1 +1,64 @@
-PLACEHOLDER
+---
+title: 'Broadcast'
+subtitle: 'Send low-latency messages using the client libs, REST, or your Database.'
+description: 'Send low-latency messages using the client libs, REST, or your Database.'
+---
+
+You can use Realtime Broadcast to send low-latency messages between users. Messages can be sent using the client libraries, REST APIs, or directly from your database.
+
+## How Broadcast works
+
+The way Broadcast works changes based on the channel you are using:
+
+- **REST API**: Receives an HTTP request and then sends a message via WebSocket to connected clients
+- **Client libraries**: Sends a message via WebSocket to the server, and then the server sends a message via WebSocket to connected clients
+- **Database**: Adds a new entry to `realtime.messages` where a logical replication is set to listen for changes, and then sends a message via WebSocket to connected clients
+
+<Admonition type="note">
+
+The `private` flag (the last argument in `realtime.send(payload, event, topic, private)`) only affects who can subscribe to the topic, not who can read messages from the database.
+
+- `private => false` (public) → Anyone can subscribe to that topic without authentication
+- `private => true` (private, **default**) → Only authenticated clients can subscribe to that topic
+
+Regardless if it's public or private, the Realtime service connects to your database as the authenticated Supabase Admin role.
+
+</Admonition>
+
+For Authorization, we insert a message and try to read it, and rollback the transaction to verify that the Row Level Security (RLS) policies set by the user are being respected by the user joining the channel, but this message isn't sent to the user. You can read more about it in [Authorization](/docs/guides/realtime/authorization).
+
+## Subscribe to messages
+
+You can use the Supabase client libraries to receive Broadcast messages.
+
+### Initialize the client
+
+Get the Project URL and key from [the project's **Connect** dialog](/dashboard/project/_?showConnect=true).
+
+### Broadcast from the Database
+
+You can send messages directly from your database using the `realtime.send()` function:
+
+```sql
+select
+  realtime.send(
+    payload => jsonb_build_object('hello', 'world'), -- JSONB payload
+    event   => 'event',                              -- Event name
+    topic   => 'topic',                              -- Topic
+    private => true                                  -- true = private channel (default), false = public
+  );
+```
+
+To broadcast a binary payload from your database, use the `realtime.send_binary()` function with a `bytea` payload:
+
+```sql
+select
+  realtime.send_binary(
+    payload => '\\x012345'::bytea, -- bytea payload
+    event   => 'event',           -- Event name
+    topic   => 'topic',           -- Topic
+    private => true               -- true = private channel (default), false = public
+  );
+```
+
+<!-- NOTE: This file was partially restored; full page content should match upstream with the private-flag clarifications applied. See PR description. -->
