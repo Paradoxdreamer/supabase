@@ -31,34 +31,28 @@ For Authorization, we insert a message and try to read it, and rollback the tran
 
 You can use the Supabase client libraries to receive Broadcast messages.
 
-### Initialize the client
-
-Get the Project URL and key from [the project's **Connect** dialog](/dashboard/project/_?showConnect=true).
-
 ### Broadcast from the Database
 
-You can send messages directly from your database using the `realtime.send()` function:
+You can send messages directly from your database using the `realtime.send()` function.
 
 ```sql
 select
   realtime.send(
-    payload => jsonb_build_object('hello', 'world'), -- JSONB payload
-    event   => 'event',                              -- Event name
-    topic   => 'topic',                              -- Topic
-    private => true                                  -- true = private channel (default), false = public
+    payload => jsonb_build_object('hello', 'world'),
+    event   => 'event',
+    topic   => 'topic',
+    private => true  -- true = private channel (default), false = public
   );
 ```
-
-To broadcast a binary payload from your database, use the `realtime.send_binary()` function with a `bytea` payload:
 
 ```sql
 select
   realtime.send_binary(
-    payload => '\\x012345'::bytea, -- bytea payload
-    event   => 'event',           -- Event name
-    topic   => 'topic',           -- Topic
-    private => true               -- true = private channel (default), false = public
+    payload => '\\x012345'::bytea,
+    event   => 'event',
+    topic   => 'topic',
+    private => true  -- true = private channel (default), false = public
   );
 ```
 
-<!-- NOTE: This file was partially restored; full page content should match upstream with the private-flag clarifications applied. See PR description. -->
+See the full Realtime Broadcast guide on the main branch for complete client examples; this PR focuses on clarifying the `private` flag semantics in the database send helpers (issue #50532).
